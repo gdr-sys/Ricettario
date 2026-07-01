@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GourmetKeep - Gestore Ricette Avanzato</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#FAFAFA] text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- NAVBAR -->
+    <header class="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-orange-500 text-white p-2 rounded-xl">
+                    <i data-lucide="cooking-pot" class="w-6 h-6"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">GourmetKeep</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="triggerImport()" class="text-gray-600 hover:text-orange-500 bg-gray-50 hover:bg-orange-50 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Importa
+                </button>
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(event)">
+                
+                <button onclick="exportData()" class="text-gray-600 hover:text-orange-500 bg-gray-50 hover:bg-orange-50 px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2">
+                    <i data-lucide="upload" class="w-4 h-4"></i> Esporta
+                </button>
+
+                <button onclick="openModal()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl font-medium shadow-xs transition flex items-center gap-2 text-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Nuova Ricetta
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- COLONNA SINISTRA: FILTRI E LISTA RICETTE -->
+        <section class="lg:col-span-1 space-y-6">
+            <!-- Pannello Filtri -->
+            <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
+                <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal" class="w-4 h-4 text-orange-500"></i> Filtra Ricette
+                </h3>
+                
+                <!-- Cerca per nome o ingrediente -->
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                    <input type="text" id="search-input" oninput="filterRecipes()" placeholder="Cerca ricetta o ingrediente..." class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-xs">
+                </div>
+
+                <!-- Filtro Tempo -->
+                <div>
+                    <label class="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Tempo Massimo</label>
+                    <select id="filter-time" onchange="filterRecipes()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none text-xs">
+                        <option value="">Qualsiasi tempistica</option>
+                        <option value="15">Fino a 15 minuti</option>
+                        <option value="30">Fino a 30 minuti</option>
+                        <option value="60">Fino a 1 ora</option>
+                        <option value="120">Fino a 2 ore</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista Card Ricette -->
+            <div class="space-y-3">
+                <h3 class="font-bold text-gray-400 text-xs uppercase tracking-wider pl-1">Le tue Ricette (<span id="recipe-count">0</span>)</h3>
+                <div id="recipes-container" class="space-y-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
+                    <!-- Popolato dinamicamente -->
+                </div>
+            </div>
+        </section>
+
+        <!-- COLONNA DESTRA: DETTAGLIO RICETTA SELEZIONATA -->
+        <section class="lg:col-span-2">
+            <div id="detail-view" class="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden hidden">
+                <!-- Foto Copertina -->
+                <div id="detail-image" class="h-64 w-full bg-cover bg-center relative">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                    <button onclick="deleteRecipe()" class="absolute top-4 right-4 bg-white/90 hover:bg-red-50 text-red-600 p-2 rounded-xl shadow-xs transition" title="Elimina ricetta">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <div class="absolute bottom-6 left-6 right-6 text-white">
+                        <span id="detail-category" class="bg-orange-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">Primo</span>
+                        <h2 id="detail-title" class="text-2xl font-bold mt-1">Titolo Ricetta</h2>
+                        <div class="flex gap-4 text-xs text-gray-200 mt-2">
+                            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> <span id="detail-time">30</span> min</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Corpo Dettaglio -->
+                <div class="p-6 grid grid-cols-1 md:grid-cols-5 gap-8">
+                    <!-- Ingredienti & Convertitore (2 Colonne) -->
+                    <div class="md:col-span-2 space-y-5">
+                        <!-- Convertitore -->
+                        <div class="bg-orange-50/70 border border-orange-100 p-4 rounded-xl">
+                            <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wide flex items-center gap-1.5 mb-1">
+                                <i data-lucide="scale" class="w-3.5 h-3.5"></i> Bilanciatore Proporzioni
+                            </h4>
+                            <p class="text-[11px] text-orange-600 mb-3">Imposta quanto hai di un ingrediente, ricalcolerò gli altri.</p>
+                            
+                            <div class="space-y-2">
+                                <select id="calc-ingrediente" class="w-full bg-white border border-gray-200 rounded-lg p-1.5 text-xs focus:outline-none"></select>
+                                <div class="flex gap-2">
+                                    <input type="number" id="calc-valore" placeholder="Quantità" class="w-full bg-white border border-gray-200 rounded-lg p-1.5 text-xs focus:outline-none">
+                                    <button onclick="calcolaProporzioni()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition shrink-0">Calcola</button>
+                                </div>
+                            </div>
+                            <button onclick="resetDettaglioIngredienti()" class="text-[10px] text-gray-500 underline hover:text-orange-600 mt-2 block text-right w-full">Ripristina dosi originali</button>
+                        </div>
+
+                        <!-- Lista Ingredienti reali -->
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Ingredienti completi</h4>
+                            <ul id="detail-ingredients-list" class="space-y-2">
+                                <!-- Popolato via JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Procedimenti (3 Colonne) -->
+                    <div class="md:col-span-3 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Preparazione passo dopo passo</h4>
+                        <div id="detail-steps-list" class="space-y-4 relative before:absolute before:inset-y-0 before:left-3.5 before:w-0.5 before:bg-gray-100">
+                            <!-- Popolato via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schermata di Benvenuto vuota -->
+            <div id="empty-view" class="h-96 bg-white border border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center p-6">
+                <div class="bg-gray-50 p-4 rounded-full text-gray-400 mb-3">
+                    <i data-lucide="book-open" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-bold text-gray-700 text-base">Nessuna ricetta selezionata</h3>
+                <p class="text-gray-400 text-xs max-w-xs mt-1">Seleziona una ricetta dalla lista a sinistra oppure creane subito una nuova per iniziare.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODALE INSERIMENTO NUOVA RICETTA -->
+    <div id="recipe-modal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl">
+            <!-- Modal Header -->
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-lg">Aggiungi Nuova Ricetta</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <!-- Modal Body (Scrollable) -->
+            <form id="recipe-form" onsubmit="saveRecipe(event)" class="p-6 overflow-y-auto space-y-4 flex-1 text-xs">
+                <!-- Info Base -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block font-medium text-gray-700 mb-1">Nome Ricetta *</label>
+                        <input type="text" id="form-title" required placeholder="Es. Lasagne alla Bolognese" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Categoria</label>
+                        <input type="text" id="form-category" placeholder="Es. Primo, Dolce" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Tempo di prep. (minuti) *</label>
+                        <input type="number" id="form-time" required min="1" placeholder="Es. 30" class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">URL Foto Copertina (opzionale)</label>
+                        <input type="url" id="form-image" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500">
+                    </div>
+                </div>
+
+                <!-- Sezione Ingredienti Dinamici -->
+                <div class="border-t border-gray-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-bold text-gray-900 text-sm">Ingredienti *</h4>
+                        <button type="button" onclick="addIngredientRow()" class="text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Aggiungi riga
+                        </button>
+                    </div>
+                    <div id="form-ingredients-container" class="space-y-2">
+                        <!-- Righe ingredienti inserite qui -->
+                    </div>
+                </div>
+
+                <!-- Sezione Procedimenti Dinamici -->
+                <div class="border-t border-gray-100 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-bold text-gray-900 text-sm">Procedimento / Passaggi *</h4>
+                        <button type="button" onclick="addStepRow()" class="text-orange-500 hover:text-orange-600 font-medium flex items-center gap-1">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Aggiungi passaggio
+                        </button>
+                    </div>
+                    <div id="form-steps-container" class="space-y-2">
+                        <!-- Righe passaggi inserite qui -->
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="border-t border-gray-100 pt-4 flex justify-end gap-2">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition font-medium">Annulla</button>
+                    <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition shadow-xs">Salva nel Database</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGICA APPLICATIVA JAVASCRIPT -->
+    <script>
+        // Array di ricette demo caricate se il localStorage è vuoto
+        const ricetteDemo = [
+            {
+                id: "demo-1",
+                title: "Bowl di Salmone e Avocado",
+                category: "Piatto Unico",
+                time: 20,
+                image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600",
+                ingredients: [
+                    { nome: "Salmone Fresco (g)", qta: 150 },
+                    { nome: "Riso per Sushi (g)", qta: 100 },
+                    { nome: "Avocado (pz)", qta: 0.5 },
+                    { nome: "Salsa di Soia (ml)", qta: 20 }
+                ],
+                steps: [
+                    "Sciacqua accuratamente il riso per sushi e cuocilo seguendo le istruzioni.",
+                    "Taglia il salmone fresco e l'avocado a cubetti uniformi.",
+                    "Disponi il riso alla base, aggiungi il salmone, l'avocado e condisci con la salsa di soia."
+                ]
+            }
+        ];
+
+        let databaseRicette = [];
+        let idRicettaAttiva = null;
+        let ingredientiModificatiConvertitore = []; // Mantiene le qta scalate correnti nel dettaglio
+
+        // 1. CARICAMENTO E INIZIALIZZAZIONE (LOCALSTORAGE)
+        function initApp() {
+            const locale = localStorage.getItem('gourmet_keep_data');
+            if (locale) {
+                databaseRicette = JSON.parse(locale);
+            } else {
+                databaseRicette = ricetteDemo;
+                salvaSuFileLocale();
+            }
+            lucide.createIcons();
+            renderRecipesList(databaseRicette);
+            
+            // Crea le prime righe vuote nel form della modale
+            resetForm();
+        }
+
+        function salvaSuFileLocale() {
+            localStorage.setItem('gourmet_keep_data', JSON.stringify(databaseRicette));
+        }
+
+        // 2. RENDERING LISTA SINISTRA
+        function renderRecipesList(recipes) {
+            const container = document.getElementById('recipes-container');
+            document.getElementById('recipe-count').textContent = recipes.length;
+            container.innerHTML = '';
+
+            if (recipes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Nessuna ricetta trovata.</p>`;
+                return;
+            }
+
+            recipes.forEach(ricetta => {
+                const bgImg = ricetta.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&q=80&w=400';
+                const card = document.createElement('div');
+                card.className = `bg-white p-3 rounded-xl border transition cursor-pointer flex gap-3 items-center hover:border-orange-200 hover:shadow-xs ${idRicettaAttiva === ricetta.id ? 'border-orange-500 ring-2 ring-orange-500/10' : 'border-gray-100'}`;
+                card.onclick = () => selectRecipe(ricetta.id);
+                
+                card.innerHTML = `
+                    <div class="w-14 h-14 rounded-lg bg-cover bg-center shrink-0 bg-gray-100" style="background-image: url('${bgImg}')"></div>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[9px] font-bold text-orange-500 uppercase tracking-wider">${ricetta.category || 'Ricetta'}</span>
+                        <h4 class="font-bold text-gray-900 text-sm truncate">${ricetta.title}</h4>
+                        <div class="flex gap-2 items-center text-[11px] text-gray-400 mt-0.5">
+                            <span class="flex items-center gap-0.5"><i data-lucide="clock" class="w-3 h-3"></i> ${ricetta.time} min</span>
+                            <span>•</span>
+                            <span>${ricetta.ingredients.length} ingr.</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // 3. SELEZIONE E DETTAGLIO RICETTA
+        function selectRecipe(id) {
+            idRicettaAttiva = id;
+            const ricetta = databaseRicette.find(r => r.id === id);
+            if (!ricetta) return;
+
+            // Rinfresca la selezione grafica a sinistra
+            renderRecipesList(getFilteredRecipes());
+
+            // Mostra le viste corrette
+            document.getElementById('empty-view').classList.add('hidden');
+            document.getElementById('detail-view').classList.remove('hidden');
+
+            // Imposta i dati testuali
+            document.getElementById('detail-title').textContent = ricetta.title;
+            document.getElementById('detail-category').textContent = ricetta.category || 'Ricetta';
+            document.getElementById('detail-time').textContent = ricetta.time;
+            document.getElementById('detail-image').style.backgroundImage = `url('${ricetta.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&q=80&w=800'}')`;
+
+            // Clona gli ingredienti per le modifiche temporanee del convertitore
+            ingredientiModificatiConvertitore = JSON.parse(JSON.stringify(ricetta.ingredients));
+            
+            // Popola il menu a tendina del convertitore
+            const calcSelect = document.getElementById('calc-ingrediente');
+            calcSelect.innerHTML = '';
+            ricetta.ingredients.forEach((ing, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.textContent = ing.nome;
+                calcSelect.appendChild(opt);
+            });
+            document.getElementById('calc-valore').value = '';
+
+            renderDettaglioIngredienti();
+
+            // Renderizza i Passaggi
+            const stepsList = document.getElementById('detail-steps-list');
+            stepsList.innerHTML = '';
+            ricetta.steps.forEach((step, idx) => {
+                const item = document.createElement('div');
+                item.className = "flex gap-3 relative";
+                item.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs z-10 shrink-0">${idx + 1}</div>
+                    <div class="pt-0.5">
+                        <p class="text-gray-600 text-xs leading-relaxed">${step}</p>
+                    </div>
+                `;
+                stepsList.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        function renderDettaglioIngredienti() {
+            const ul = document.getElementById('detail-ingredients-list');
+            ul.innerHTML = '';
+            ingredientiModificatiConvertitore.forEach(ing => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center py-1.5 border-b border-gray-50 text-xs";
+                li.innerHTML = `
+                    <span class="text-gray-600 font-medium">${ing.nome}</span>
+                    <span class="text-gray-900 font-bold bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md text-[11px]">${ing.qta}</span>
+                `;
+                ul.appendChild(li);
+            });
+        }
+
+        // 4. LOGICA DEL CONVERTITORE AUTOMATICO PROPORZIONALE
+        function calcolaProporzioni() {
+            const idx = parseInt(document.getElementById('calc-ingrediente').value);
+            const nuovoValore = parseFloat(document.getElementById('calc-valore').value);
+            
+            if (isNaN(nuovoValore) || nuovoValore <= 0) {
+                alert("Prego, inserisci una quantità valida maggiore di zero.");
+                return;
+            }
+
+            const ricettaOriginale = databaseRicette.find(r => r.id === idRicettaAttiva);
+            const ingredienteGuidaOriginale = ricettaOriginale.ingredients[idx];
+
+            if (ingredienteGuidaOriginale.qta === 0) {
+                alert("Non è possibile fare proporzioni su un ingrediente che ha quantità originale pari a zero.");
+                return;
+            }
+
+            // Calcolo fattore di scala
+            const fattoreDiScala = nuovoValore / ingredienteGuidaOriginale.qta;
+
+            // Ricalcola tutto l'array temporaneo
+            ingredientiModificatiConvertitore = ricettaOriginale.ingredients.map(ing => {
+                return {
+                    nome: ing.nome,
+                    qta: Math.round((ing.qta * fattoreDiScala) * 100) / 100 // Arrotonda a 2 decimali max
+                };
+            });
+
+            renderDettaglioIngredienti();
+        }
+
+        function resetDettaglioIngredienti() {
+            const ricetta = databaseRicette.find(r => r.id === idRicettaAttiva);
+            if (!ricetta) return;
+            ingredientiModificatiConvertitore = JSON.parse(JSON.stringify(ricetta.ingredients));
+            document.getElementById('calc-valore').value = '';
+            renderDettaglioIngredienti();
+        }
+
+        // 5. GESTIONE FILTRI DI RICERCA AVANZATI
+        function getFilteredRecipes() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const maxTime = document.getElementById('filter-time').value;
+
+            return databaseRicette.filter(ricetta => {
+                // Filtro tempo
+                if (maxTime && ricetta.time > parseInt(maxTime)) return false;
+                
+                // Filtro testo (cerca nel titolo, categoria o nella lista ingredienti)
+                if (query) {
+                    const matchTitolo = ricetta.title.toLowerCase().includes(query);
+                    const matchCategoria = (ricetta.category || '').toLowerCase().includes(query);
+                    const matchIngredienti = ricetta.ingredients.some(ing => ing.nome.toLowerCase().includes(query));
+                    return matchTitolo || matchCategoria || matchIngredienti;
+                }
+
+                return true;
+            });
+        }
+
+        function filterRecipes() {
+            const filtrate = getFilteredRecipes();
+            renderRecipesList(filtrate);
+        }
+
+        // 6. CREAZIONE NUOVA RICETTA & DINAMISMO FORM MODALE
+        function openModal() {
+            document.getElementById('recipe-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('recipe-modal').classList.add('hidden');
+            resetForm();
+        }
+
+        function resetForm() {
+            document.getElementById('recipe-form').reset();
+            document.getElementById('form-ingredients-container').innerHTML = '';
+            document.getElementById('form-steps-container').innerHTML = '';
+            // Aggiungi 2 righe vuote iniziali per comodità UX
+            addIngredientRow();
+            addIngredientRow();
+            addStepRow();
+        }
+
+        function addIngredientRow() {
+            const container = document.getElementById('form-ingredients-container');
+            const row = document.createElement('div');
+            row.className = "flex gap-2 items-center item-ingredient-row animate-fade-in";
+            row.innerHTML = `
+                <input type="text" placeholder="Nome ingrediente (es. Farina 00 in g)" required class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none text-xs">
+                <input type="number" step="any" placeholder="Q.tà" required class="w-24 px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none text-xs text-center">
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-1.5"><i data-lucide="trash" class="w-4 h-4"></i></button>
+            `;
+            container.appendChild(row);
+            lucide.createIcons();
+        }
+
+        function addStepRow() {
+            const container = document.getElementById('form-steps-container');
+            const row = document.createElement('div');
+            row.className = "flex gap-2 items-start item-step-row";
+            row.innerHTML = `
+                <textarea rows="2" placeholder="Descrivi questo passaggio della preparazione..." required class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none text-xs resize-none"></textarea>
+                <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-1.5 mt-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
+            `;
+            container.appendChild(row);
+            lucide.createIcons();
+        }
+
+        function saveRecipe(event) {
+            event.preventDefault();
+
+            // Estrai ingredienti
+            const ingRows = document.querySelectorAll('#form-ingredients-container > div');
+            const ingredients = [];
+            ingRows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (inputs[0].value.trim()) {
+                    ingredients.push({
+                        nome: inputs[0].value.trim(),
+                        qta: parseFloat(inputs[1].value) || 0
+                    });
+                }
+            });
+
+            // Estrai passaggi
+            const stepRows = document.querySelectorAll('#form-steps-container > div');
+            const steps = [];
+            stepRows.forEach(row => {
+                const txt = row.querySelector('textarea').value.trim();
+                if (txt) steps.push(txt);
+            });
+
+            // Oggetto nuova ricetta
+            const nuovaRicetta = {
+                id: 'recipe-' + Date.now(),
+                title: document.getElementById('form-title').value.trim(),
+                category: document.getElementById('form-category').value.trim(),
+                time: parseInt(document.getElementById('form-time').value) || 0,
+                image: document.getElementById('form-image').value.trim(),
+                ingredients: ingredients,
+                steps: steps
+            };
+
+            databaseRicette.unshift(nuovaRicetta); // Metti in cima
+            salvaSuFileLocale();
+            closeModal();
+            
+            // Auto-seleziona e mostra l'appena creata
+            selectRecipe(nuovaRicetta.id);
+        }
+
+        function deleteRecipe() {
+            if (!idRicettaAttiva) return;
+            if (confirm("Sei sicuro di voler eliminare definitivamente questa ricetta? L'azione non è annullabile.")) {
+                databaseRicette = databaseRicette.filter(r => r.id !== idRicettaAttiva);
+                salvaSuFileLocale();
+                idRicettaAttiva = null;
+                
+                document.getElementById('detail-view').classList.add('hidden');
+                document.getElementById('empty-view').classList.remove('hidden');
+                
+                renderRecipesList(getFilteredRecipes());
+            }
+        }
+
+        // 7. IMPORT / EXPORT JSON COMPLETO (SALVAGUARDIA DEI DATI)
+        function exportData() {
+            if (databaseRicette.length === 0) {
+                alert("Non ci sono ricette nel database da esportare.");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(databaseRicette, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "gourmetkeep_backup_ricette.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() {
+            document.getElementById('import-file').click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedJSON = JSON.parse(e.target.result);
+                    if (Array.isArray(importedJSON)) {
+                        if (confirm(`Rilevate ${importedJSON.length} ricette nel file. Vuoi sovrascrivere il tuo ricettario attuale?`)) {
+                            databaseRicette = importedJSON;
+                            salvaSuFileLocale();
+                            idRicettaAttiva = null;
+                            document.getElementById('detail-view').classList.add('hidden');
+                            document.getElementById('empty-view').classList.remove('hidden');
+                            renderRecipesList(databaseRicette);
+                            alert("Importazione avvenuta con successo!");
+                        }
+                    } else {
+                        alert("Il file caricato non sembra un archivio di ricette GourmetKeep valido.");
+                    }
+                } catch (err) {
+                    alert("Errore nella lettura del file JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            // Svuota l'input per permettere re-import dello stesso file
+            event.target.value = '';
+        }
+
+        // Avvia l'applicazione
+        window.onload = initApp;
+    </script>
+</body>
+</html>
