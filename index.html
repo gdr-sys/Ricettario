@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GourmetKeep Mobile</title>
     
-    <!-- ICONE WEB APP INCORPORATE (Risolto problema icona grigia) -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkdvdXJtZXRLZWVwIiwKICAic2hvcnRfbmFtZSI6ICJHb3VybWV0S2VlcCIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNGQUZBRkEiLAogICJ0aGVtZV9jb2xvciI6ICIjZjk3MzE2IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO3V0ZjgsPHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJz48cmVjdCB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgcng9JzIyJyBmaWxsPSclMjNmOTczMTYnLz48cGF0aCBkPSdNMjUgNDBoNTB2MTVhMjUgMjUgMCAwIDEtNTAgMFY0MHptNS0xNWg0MHY1SDMwdi01em0xNS0xMGgxMHYxMEg0NVYxMHpNMTUgNDVoMTBtNTAgMGgxMCcgc3Ryb2tlPSclMjNmZmZmZmYnIHN0cm9rZS13aWR0aD0nNicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJyBmaWxsPSdub25lJy8+PC9zdmc+IiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIiwKICAgICAgInB1cnBvc2UiOiAiYW55IgogICAgfQogIF0KfQ==">
+
     <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23f97316'/><path d='M25 40h50v15a25 25 0 0 1-50 0V40zm5-15h40v5H30v-5zm15-10h10v10H45V10zM15 45h10m50 0h10' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23f97316'/><path d='M25 40h50v15a25 25 0 0 1-50 0V40zm5-15h40v5H30v-5zm15-10h10v10H45V10zM15 45h10m50 0h10' stroke='%23ffffff' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
     
-    <!-- CONFIGURAZIONE WEB APP STANDALONE -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="GourmetKeep">
 
-    <!-- Tailwind CSS Standard CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
@@ -30,7 +28,6 @@
 </head>
 <body class="bg-[#FAFAFA] text-gray-800 antialiased min-h-screen flex flex-col pb-16 select-none">
 
-    <!-- NAVBAR SUPERIORE FISSA (PULITA) -->
     <header class="bg-white border-b border-gray-100 sticky top-0 z-40 shadow-xs h-14 flex items-center px-4 shrink-0">
         <div class="flex items-center gap-2">
             <div class="bg-orange-500 text-white p-1.5 rounded-lg">
@@ -40,17 +37,14 @@
         </div>
     </header>
 
-    <!-- CONTENITORE PRINCIPALE -->
     <main class="flex-1 w-full max-w-md mx-auto p-4 space-y-4 overflow-x-hidden">
         
-        <!-- SEZIONE 1: RICETTE E FILTRI RAPIDI -->
         <div id="section-home" class="space-y-4">
             <div class="relative">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
                 <input type="text" id="search-input" oninput="filterRecipes()" placeholder="Cerca ricetta o ingrediente..." class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-orange-500 text-sm shadow-xs">
             </div>
 
-            <!-- FILTRI CATEGORIA -->
             <div class="flex gap-2 overflow-x-auto no-scrollbar py-1 shrink-0">
                 <button onclick="setCategoryFilter('')" id="cat-all" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition bg-orange-500 text-white shadow-xs">Tutti</button>
                 <button onclick="setCategoryFilter('antipasto')" id="cat-antipasto" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition bg-white text-gray-600 border border-gray-200">Antipasti</button>
@@ -59,7 +53,6 @@
                 <button onclick="setCategoryFilter('dolce')" id="cat-dolce" class="cat-btn px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition bg-white text-gray-600 border border-gray-200">Dolci</button>
             </div>
 
-            <!-- Lista Card Ricette -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center px-1">
                     <h3 class="font-bold text-gray-400 text-xs uppercase tracking-wider">Ricette (<span id="recipe-count">0</span>)</h3>
@@ -68,7 +61,6 @@
             </div>
         </div>
 
-        <!-- SEZIONE 2: FILTRI AVANZATI -->
         <div id="section-filters" class="hidden bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
             <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i data-lucide="sliders-horizontal" class="text-orange-500 w-4 h-4"></i> Filtri Avanzati</h3>
             <div>
@@ -82,7 +74,6 @@
             </div>
         </div>
 
-        <!-- SEZIONE 3: GESTIONE DATI BACKUP -->
         <div id="section-backup" class="hidden bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
             <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i data-lucide="database" class="text-orange-500 w-4 h-4"></i> Backup & Sincronizzazione</h3>
             <p class="text-xs text-gray-500 leading-relaxed">Esporta o importa le tue ricette per non perderle.</p>
@@ -99,22 +90,18 @@
         </div>
     </main>
 
-    <!-- SCHERMATA DETTAGLIO RICETTA (SCHERMO INTERO) -->
     <div id="detail-overlay" class="fixed inset-0 bg-white z-50 hidden flex-col overflow-y-auto pb-6">
         <div id="detail-image" class="h-56 w-full bg-cover bg-center relative shrink-0">
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            <!-- Tasti di Controllo Superiori -->
             <button onclick="closeRecipeDetail()" class="absolute top-4 left-4 bg-white/95 text-gray-800 p-2 rounded-xl shadow-md active:scale-95 transition">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
             
             <div class="absolute top-4 right-4 flex gap-2">
-                <!-- TASTO MODIFICA -->
-                <button onclick="openEditModal()" class="bg-white/95 text-orange-600 p-2 rounded-xl shadow-md active:scale-95 transition" title="Modifica ricetta">
+                <button onclick="openEditModal()" class="bg-white/95 text-orange-600 p-2 rounded-xl shadow-md active:scale-95 transition">
                     <i data-lucide="pencil" class="w-5 h-5"></i>
                 </button>
-                <!-- TASTO ELIMINA -->
-                <button onclick="deleteRecipe()" class="bg-white/95 text-red-600 p-2 rounded-xl shadow-md active:scale-95 transition" title="Elimina ricetta">
+                <button onclick="deleteRecipe()" class="bg-white/95 text-red-600 p-2 rounded-xl shadow-md active:scale-95 transition">
                     <i data-lucide="trash-2" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -129,7 +116,6 @@
         </div>
 
         <div class="p-4 space-y-5">
-            <!-- Bilanciatore Proporzioni -->
             <div class="bg-orange-50/80 border border-orange-100 p-4 rounded-xl space-y-2">
                 <h4 class="text-xs font-bold text-orange-800 uppercase tracking-wide flex items-center gap-1">
                     <i data-lucide="scale" class="w-3.5 h-3.5"></i> Bilanciatore Proporzioni
@@ -144,13 +130,11 @@
                 <button onclick="resetDettaglioIngredienti()" class="text-[10px] text-gray-500 underline block text-right w-full">Ripristina dosi originali</button>
             </div>
 
-            <!-- Lista Ingredienti -->
             <div class="space-y-2">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Ingredienti</h4>
                 <ul id="detail-ingredients-list" class="bg-gray-50 rounded-xl p-3 space-y-2 divide-y divide-gray-200/50"></ul>
             </div>
 
-            <!-- Procedimento -->
             <div class="space-y-3">
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Preparazione</h4>
                 <div id="detail-steps-list" class="space-y-4 pl-1"></div>
@@ -158,12 +142,10 @@
         </div>
     </div>
 
-    <!-- TASTO FLUTTUANTE NUOVA RICETTA -->
-    <button id="floating-add-btn" onclick="openCreateModal()" class="fixed bottom-20 right-4 bg-orange-500 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-30 active:scale-95 transition-transform" title="Nuova Ricetta">
+    <button id="floating-add-btn" onclick="openCreateModal()" class="fixed bottom-20 right-4 bg-orange-500 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-30 active:scale-95 transition-transform">
         <i data-lucide="plus" class="w-5 h-5"></i>
     </button>
 
-    <!-- BARRA DI NAVIGAZIONE IN BASSO (STYLE APP) -->
     <nav class="fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-gray-100 flex items-center justify-around z-40 px-2 max-w-md mx-auto shadow-md">
         <button onclick="switchTab('home')" id="tab-home" class="flex flex-col items-center justify-center text-orange-500 font-medium text-[10px] gap-0.5 flex-1">
             <i data-lucide="book-marked" class="w-5 h-5"></i>Ricettario
@@ -176,7 +158,6 @@
         </button>
     </nav>
 
-    <!-- MODALE INSERIMENTO / MODIFICA RICETTA -->
     <div id="recipe-modal" class="fixed inset-0 bg-white z-50 hidden flex-col overflow-y-auto">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
             <h3 id="modal-title-text" class="font-bold text-gray-900 text-base">Nuova Ricetta</h3>
@@ -184,7 +165,6 @@
         </div>
         
         <form id="recipe-form" onsubmit="saveRecipe(event)" class="p-4 space-y-4 flex-1 text-xs pb-12">
-            <!-- ID Nascosto per capire se stiamo modificando -->
             <input type="hidden" id="form-recipe-id" value="">
 
             <div>
@@ -208,19 +188,13 @@
                 </div>
             </div>
 
-            <!-- SEZIONE IMMAGINE: ENTRAMBE LE OPZIONI (LINK E LOCALE) -->
             <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl space-y-3">
                 <h4 class="font-bold text-gray-700 text-xs uppercase tracking-wide">Immagine della Ricetta</h4>
-                
-                <!-- Opzione A: Link web classico -->
                 <div>
                     <label class="block text-[11px] text-gray-500 mb-1">Opzione 1: Incolla un link internet (URL)</label>
                     <input type="url" id="form-image-url" placeholder="https://esempio.com/foto.jpg" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-orange-500 bg-white" oninput="handleUrlInputChange()">
                 </div>
-                
                 <div class="text-center text-gray-300 font-bold text-[10px]">OPPURE</div>
-
-                <!-- Opzione B: Foto locale / fotocamera -->
                 <div>
                     <label class="block text-[11px] text-gray-500 mb-1">Opzione 2: Carica da galleria o scatta foto</label>
                     <div class="flex gap-2 items-center">
@@ -230,17 +204,13 @@
                         <input type="file" id="form-image-file" accept="image/*" class="hidden" onchange="handleLocalImageUpload(event)">
                         <button type="button" id="btn-remove-photo" onclick="removeSelectedPhoto()" class="hidden text-red-500 text-xs font-semibold underline">Azzera foto locale</button>
                     </div>
-                    <!-- Stringa base64 nascosta per memorizzare il file locale -->
                     <input type="hidden" id="form-image-base64" value="">
                 </div>
-                
-                <!-- Anteprima dinamica nel modulo (per mostrare all'utente cosa ha scelto) -->
                 <div id="form-image-preview-container" class="hidden mt-1 w-20 h-20 border border-gray-200 rounded-xl overflow-hidden bg-white">
                     <img id="form-image-preview" src="" class="w-full h-full object-cover">
                 </div>
             </div>
 
-            <!-- Ingredienti Dinamici -->
             <div class="border-t border-gray-100 pt-4 space-y-2">
                 <div class="flex items-center justify-between">
                     <h4 class="font-bold text-gray-900 text-sm">Ingredienti *</h4>
@@ -251,7 +221,6 @@
                 <div id="form-ingredients-container" class="space-y-2"></div>
             </div>
 
-            <!-- Procedimenti Dinamici -->
             <div class="border-t border-gray-100 pt-4 space-y-2">
                 <div class="flex items-center justify-between">
                     <h4 class="font-bold text-gray-900 text-sm">Passaggi Preparazione *</h4>
@@ -268,26 +237,109 @@
         </form>
     </div>
 
-    <!-- SCRIPT LOGICA MOBILE INTERA -->
     <script>
+        // LE TUE RICETTE SALVATE CARICATE DIRETTAMENTE DENTRO IL CODICE ALL'AVVIO
         const ricetteDemo = [
-            {
-                id: "demo-1",
-                title: "Bowl di Salmone e Avocado",
-                category: "primo",
-                time: 20,
-                image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600",
-                ingredients: [
-                    { nome: "Salmone Fresco (g)", qta: 150 },
-                    { nome: "Riso per Sushi (g)", qta: 100 },
-                    { nome: "Avocado (pz)", qta: 0.5 }
-                ],
-                steps: [
-                    "Sciacqua accuratamente il riso per sushi e cuocilo.",
-                    "Taglia il salmone fresco e l'avocado a cubetti uniformi.",
-                    "Disponi gli elementi nella ciotola e servi freschi."
-                ]
-            }
+          {
+            "id": "recipe-1782933991078",
+            "title": "Salame al cioccolato",
+            "category": "dolce",
+            "time": 30,
+            "image": "https://www.lospicchiodaglio.it/img/ricette/salamecioccolato.jpg",
+            "ingredients": [
+              { "nome": "uovo", "qta": 1 },
+              { "nome": "tuorlo", "qta": 1 },
+              { "nome": "zucchero", "qta": 100 },
+              { "nome": "burro", "qta": 125 },
+              { "nome": "cacao", "qta": 50 },
+              { "nome": "biscotti", "qta": 250 }
+            ],
+            "steps": [ "Unire gli ingredienti poi mettere in frigo" ]
+          },
+          {
+            "id": "recipe-1782933706448",
+            "title": "Passatelli",
+            "category": "primo",
+            "time": 30,
+            "image": "https://rossettoecioccolato.com/wp-content/uploads/2020/08/passatelli-in-brodo-scaled.jpg",
+            "ingredients": [
+              { "nome": "Uova", "qta": 7 },
+              { "nome": "pane grattugiato. No olio", "qta": 600 },
+              { "nome": "formaggio grattugiato", "qta": 300 },
+              { "nome": "Noce moscata", "qta": 1 },
+              { "nome": "Limone", "qta": 0.5 }
+            ],
+            "steps": [ "Unire gli ingredienti" ]
+          },
+          {
+            "id": "recipe-1782933496501",
+            "title": "Pancakes",
+            "category": "dolce",
+            "time": 15,
+            "image": "https://www.tasteofhome.com/wp-content/uploads/2025/02/Yogurt-Pancakes_EXPS_TOHD24_36477_KristinaVanni_5.jpg",
+            "ingredients": [
+              { "nome": "Uovo", "qta": 1 },
+              { "nome": "Zucchero", "qta": 40 },
+              { "nome": "Farina 00", "qta": 100 },
+              { "nome": "Latte", "qta": 100 },
+              { "nome": "Lievito (cucchiaino)", "qta": 1 }
+            ],
+            "steps": [ "Mescola ingredienti" ]
+          },
+          {
+            "id": "recipe-1782933412505",
+            "title": "Crepes",
+            "category": "dolce",
+            "time": 15,
+            "image": "https://www.giallozafferano.it/images/172-17265/Crepes-dolci-e-salate-ricetta-base_650x433_wm.jpg",
+            "ingredients": [
+              { "nome": "Uova medie", "qta": 3 },
+              { "nome": "Farina 00", "qta": 250 },
+              { "nome": "Latte", "qta": 500 },
+              { "nome": "Burro", "qta": 1 }
+            ],
+            "steps": [ "Mescolare tutti gli ingredienti utilizzando il burro per ungere la padella" ]
+          },
+          {
+            "id": "recipe-1782933306118",
+            "title": "Crema di piselli",
+            "category": "primo",
+            "time": 18,
+            "image": "",
+            "ingredients": [
+              { "nome": "Piselli", "qta": 500 },
+              { "nome": "Burro", "qta": 30 },
+              { "nome": "Formaggio", "qta": 50 },
+              { "nome": "Cipolla", "qta": 0.5 }
+            ],
+            "steps": [
+              "Tritare la cipolla e imbiondire per un paio di minuti.",
+              "Una volta lessati i piselli, unirli alla cipolla, aggiungendo acqua di cottura. 2 min a vel. 3",
+              "Unire il formaggio. 2 min vel. 3",
+              "Mandare le lames al massimo per ridurre tutto al minimo.",
+              "Setacciare il composto per renderlo vellutato."
+            ]
+          },
+          {
+            "id": "recipe-1782925076116",
+            "title": "Torta in tazza",
+            "category": "dolce",
+            "time": 6,
+            "image": "https://blog.giallozafferano.it/benessereegusto/wp-content/uploads/2020/03/ipiccy_image-10-1536x843.jpg",
+            "ingredients": [
+              { "nome": "Cacao amaro in polvere", "qta": 10 },
+              { "nome": "Farina 00", "qta": 25 },
+              { "nome": "Lievito in polvere (cucchiaino)", "qta": 0.5 },
+              { "nome": "Zucchero", "qta": 20 },
+              { "nome": "Acqua", "qta": 25 },
+              { "nome": "Olio di semi", "qta": 15 }
+            ],
+            "steps": [
+              "Mescola tutti gli ingredienti secchi",
+              "Aggiungi acqua e olio e mischia",
+              "Metti in microonde per 45 secondi (rimane meno cotto)"
+            ]
+          }
         ];
 
         let databaseRicette = [];
@@ -397,7 +449,6 @@
             if (!ricetta) return;
 
             document.getElementById('detail-overlay').classList.remove('hidden');
-
             document.getElementById('detail-title').textContent = ricetta.title;
             document.getElementById('detail-category').textContent = ricetta.category || 'Ricetta';
             document.getElementById('detail-time').textContent = ricetta.time;
@@ -512,7 +563,6 @@
 
             document.getElementById('form-recipe-id').value = ricetta.id;
             document.getElementById('modal-title-text').textContent = "Modifica Ricetta";
-
             document.getElementById('form-title').value = ricetta.title;
             document.getElementById('form-category').value = ricetta.category || 'primo';
             document.getElementById('form-time').value = ricetta.time;
@@ -570,7 +620,6 @@
         function handleUrlInputChange() {
             const urlValue = document.getElementById('form-image-url').value.trim();
             const localBase64 = document.getElementById('form-image-base64').value;
-            
             if (urlValue && !localBase64) {
                 document.getElementById('form-image-preview').src = urlValue;
                 document.getElementById('form-image-preview-container').classList.remove('hidden');
@@ -586,7 +635,6 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const base64String = e.target.result;
-                
                 document.getElementById('form-image-base64').value = base64String;
                 document.getElementById('form-image-preview').src = base64String;
                 document.getElementById('form-image-preview-container').classList.remove('hidden');
@@ -612,7 +660,7 @@
             const row = document.createElement('div');
             row.className = "flex gap-2 items-center ing-row";
             row.innerHTML = `
-                <input type="text" value="${nome}" placeholder="Ingredienti (es. Riso in g)" required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs ing-name">
+                <input type="text" value="${nome}" placeholder="Ingredienti" required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs ing-name">
                 <input type="number" step="any" value="${qta}" placeholder="Q.tà" required class="w-20 px-2 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs text-center ing-qta">
                 <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 p-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
             `;
@@ -627,7 +675,7 @@
             const row = document.createElement('div');
             row.className = "flex gap-2 items-start step-row";
             row.innerHTML = `
-                <textarea rows="2" placeholder="Descrivi il passaggio..." required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs resize-none step-text">${testo}</textarea>
+                <textarea rows="2" placeholder="Passaggio..." required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs resize-none step-text">${testo}</textarea>
                 <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 p-1 mt-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
             `;
             container.appendChild(row);
@@ -655,7 +703,6 @@
             });
 
             const editId = document.getElementById('form-recipe-id').value;
-            
             const fotoLocale = document.getElementById('form-image-base64').value.trim();
             const linkUrlWeb = document.getElementById('form-image-url').value.trim();
             const fotoSceltaDefinitiva = fotoLocale || linkUrlWeb;
@@ -725,58 +772,23 @@
             reader.onload = function(e) {
                 try {
                     const importedJSON = JSON.parse(e.target.result);
-                    
                     if (Array.isArray(importedJSON)) {
-                        const scelta = confirm(
-                            `Rilevate ${importedJSON.length} ricette nel file.\n\n` +
-                            `• Premi OK per UNIRLE a quelle attuali (manterrai le tue ricette ed eviterai i duplicati).\n` +
-                            `• Premi ANNULLA per CANCELLARE il ricettario attuale e sostituirlo interamente con questo file.`
-                        );
-
+                        const scelta = confirm("Vuoi UNIRE le ricette a quelle attuali o SOVRASCRIVERE tutto?");
                         if (scelta) {
-                            let ricetteAggiunte = 0;
                             importedJSON.forEach(nuovaRicetta => {
-                                const esisteGia = databaseRicette.some(r => 
-                                    r.id === nuovaRicetta.id || 
-                                    r.title.toLowerCase().trim() === nuovaRicetta.title.toLowerCase().trim()
-                                );
-                                
-                                if (!esisteGia) {
-                                    databaseRicette.push(nuovaRicetta);
-                                    ricetteAggiunte++;
-                                }
+                                const esisteGia = databaseRicette.some(r => r.id === nuovaRicetta.id || r.title.toLowerCase().trim() === nuovaRicetta.title.toLowerCase().trim());
+                                if (!esisteGia) databaseRicette.push(nuovaRicetta);
                             });
-                            alert(`Operazione completata con successo! Sono state aggiunte ${ricetteAggiunte} nuove ricette al tuo archivio.`);
                         } else {
-                            const confermaSecondaria = confirm(
-                                "ATTENZIONE!\n" +
-                                "Sei assolutamente sicuro di voler sovrascrivere tutto?\n" +
-                                "In questo modo eliminerai TUTTE le ricette attualmente salvate nella memoria del telefono."
-                            );
-
-                            if (confermaSecondaria) {
-                                databaseRicette = importedJSON;
-                                alert("Ricettario sovrascritto con successo!");
-                            } else {
-                                event.target.value = '';
-                                return;
-                            }
+                            databaseRicette = importedJSON;
                         }
-
                         salvaSuFileLocale();
                         closeRecipeDetail();
                         switchTab('home');
                         renderRecipesList(databaseRicette);
-                        
-                    } else {
-                        alert("Errore: Il file selezionato non contiene un elenco valido di ricette strutturate.");
                     }
-                } catch (err) { 
-                    alert("Errore durante la lettura del file. Assicurati che sia un file di backup .json valido."); 
-                    console.error(err);
-                }
+                } catch (err) { alert("File non valido"); }
             };
-            
             reader.readAsText(file);
             event.target.value = '';
         }
