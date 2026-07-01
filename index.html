@@ -181,9 +181,31 @@
                 </div>
             </div>
 
-            <div>
-                <label class="block font-semibold text-gray-600 mb-1">Link Foto Copertina (opzionale)</label>
-                <input type="url" id="form-image" placeholder="https://..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none">
+            <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl space-y-3">
+                <h4 class="font-bold text-gray-700 text-xs uppercase tracking-wide">Immagine della Ricetta</h4>
+                
+                <div>
+                    <label class="block text-[11px] text-gray-500 mb-1">Opzione 1: Incolla un link internet (URL)</label>
+                    <input type="url" id="form-image-url" placeholder="https://esempio.com/foto.jpg" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-orange-500 bg-white" oninput="handleUrlInputChange()">
+                </div>
+                
+                <div class="text-center text-gray-300 font-bold text-[10px]">OPPURE</div>
+
+                <div>
+                    <label class="block text-[11px] text-gray-500 mb-1">Opzione 2: Carica da galleria o scatta foto</label>
+                    <div class="flex gap-2 items-center">
+                        <button type="button" onclick="document.getElementById('form-image-file').click()" class="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-xl font-medium text-xs flex items-center gap-1.5 active:bg-gray-100 transition shadow-xs">
+                            <i data-lucide="camera" class="w-3.5 h-3.5 text-gray-500"></i> Scegli / Scatta
+                        </button>
+                        <input type="file" id="form-image-file" accept="image/*" class="hidden" onchange="handleLocalImageUpload(event)">
+                        <button type="button" id="btn-remove-photo" onclick="removeSelectedPhoto()" class="hidden text-red-500 text-xs font-semibold underline">Azzera foto locale</button>
+                    </div>
+                    <input type="hidden" id="form-image-base64" value="">
+                </div>
+                
+                <div id="form-image-preview-container" class="hidden mt-1 w-20 h-20 border border-gray-200 rounded-xl overflow-hidden bg-white">
+                    <img id="form-image-preview" src="" class="w-full h-full object-cover">
+                </div>
             </div>
 
             <div class="border-t border-gray-100 pt-4 space-y-2">
@@ -441,7 +463,6 @@
             renderRecipesList(getFilteredRecipes());
         }
 
-        // APERTURA IN MODALITÀ "CREAZIONE"
         function openCreateModal() {
             document.getElementById('form-recipe-id').value = ''; 
             document.getElementById('modal-title-text').textContent = "Nuova Ricetta";
@@ -450,7 +471,6 @@
             updateFloatingButtonVisibility();
         }
 
-        // APERTURA IN MODALITÀ "MODIFICA" (Carica i dati correnti)
         function openEditModal() {
             const ricetta = databaseRicette.find(r => r.id === idRicettaAttiva);
             if (!ricetta) return;
@@ -461,16 +481,34 @@
             document.getElementById('form-title').value = ricetta.title;
             document.getElementById('form-category').value = ricetta.category || 'primo';
             document.getElementById('form-time').value = ricetta.time;
-            document.getElementById('form-image').value = ricetta.image || '';
+            
+            // Gestione foto in modifica (capisce se era un link o un base64 locale)
+            if (ricetta.image) {
+                if (ricetta.image.startsWith('data:image')) {
+                    // Era una foto caricata localmente
+                    document.getElementById('form-image-base64').value = ricetta.image;
+                    document.getElementById('form-image-preview').src = ricetta.image;
+                    document.getElementById('form-image-preview-container').classList.remove('hidden');
+                    document.getElementById('btn-remove-photo').classList.remove('hidden');
+                    document.getElementById('form-image-url').value = '';
+                } else {
+                    // Era un link web (URL)
+                    document.getElementById('form-image-url').value = ricetta.image;
+                    document.getElementById('form-image-preview').src = ricetta.image;
+                    document.getElementById('form-image-preview-container').classList.remove('hidden');
+                    document.getElementById('form-image-base64').value = '';
+                    document.getElementById('btn-remove-photo').classList.add('hidden');
+                }
+            } else {
+                removeSelectedPhoto();
+            }
 
-            // Carica gli ingredienti esistenti
             const ingContainer = document.getElementById('form-ingredients-container');
             ingContainer.innerHTML = '';
             ricetta.ingredients.forEach(ing => {
                 addIngredientRowWithValue(ing.nome, ing.qta);
             });
 
-            // Carica i passaggi esistenti
             const stepContainer = document.getElementById('form-steps-container');
             stepContainer.innerHTML = '';
             ricetta.steps.forEach(step => {
@@ -491,9 +529,54 @@
             document.getElementById('recipe-form').reset();
             document.getElementById('form-ingredients-container').innerHTML = '';
             document.getElementById('form-steps-container').innerHTML = '';
+            removeSelectedPhoto();
             addIngredientRow();
             addIngredientRow();
             addStepRow();
+        }
+
+        // AGGIORNAMENTO ANTEPRIMA SE L'UTENTE DIGITA UN URL WEB
+        function handleUrlInputChange() {
+            const urlValue = document.getElementById('form-image-url').value.trim();
+            const localBase64 = document.getElementById('form-image-base64').value;
+            
+            // Se c'è un link internet e NON c'è una foto locale inserita, mostra l'anteprima del link
+            if (urlValue && !localBase64) {
+                document.getElementById('form-image-preview').src = urlValue;
+                document.getElementById('form-image-preview-container').classList.remove('hidden');
+            } else if (!urlValue && !localBase64) {
+                document.getElementById('form-image-preview-container').classList.add('hidden');
+            }
+        }
+
+        // ACQUISIZIONE FOTO LOCALE (GALLERIA O FOTOCAMERA)
+        function handleLocalImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                
+                document.getElementById('form-image-base64').value = base64String;
+                document.getElementById('form-image-preview').src = base64String;
+                document.getElementById('form-image-preview-container').classList.remove('hidden');
+                document.getElementById('btn-remove-photo').classList.remove('hidden');
+                
+                // Opzionale: pulisce l'input dell'URL se si sceglie di caricare una foto locale
+                document.getElementById('form-image-url').value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeSelectedPhoto() {
+            document.getElementById('form-image-file').value = '';
+            document.getElementById('form-image-base64').value = '';
+            document.getElementById('form-image-preview').src = '';
+            document.getElementById('form-image-preview-container').classList.add('hidden');
+            document.getElementById('btn-remove-photo').classList.add('hidden');
+            // Se c'era un link URL compilato nel frattempo, ripristina l'anteprima di quello
+            handleUrlInputChange();
         }
 
         function addIngredientRow() { addIngredientRowWithValue('', ''); }
@@ -546,9 +629,13 @@
             });
 
             const editId = document.getElementById('form-recipe-id').value;
+            
+            // PRIORITÀ IMMAGINE: Se c'è la foto scattata/locale usa quella (Base64), altrimenti prende il link URL web.
+            const fotoLocale = document.getElementById('form-image-base64').value.trim();
+            const linkUrlWeb = document.getElementById('form-image-url').value.trim();
+            const fotoSceltaDefinitiva = fotoLocale || linkUrlWeb;
 
             if (editId) {
-                // MODIFICA: Aggiorna la ricetta esistente nello stesso posto
                 const index = databaseRicette.findIndex(r => r.id === editId);
                 if (index !== -1) {
                     databaseRicette[index] = {
@@ -556,20 +643,19 @@
                         title: document.getElementById('form-title').value.trim(),
                         category: document.getElementById('form-category').value,
                         time: parseInt(document.getElementById('form-time').value) || 0,
-                        image: document.getElementById('form-image').value.trim(),
+                        image: fotoSceltaDefinitiva,
                         ingredients: ingredients,
                         steps: steps
                     };
                 }
                 idRicettaAttiva = editId;
             } else {
-                // CREAZIONE: Aggiungi in cima alla lista
                 const nuovaRicetta = {
                     id: 'recipe-' + Date.now(),
                     title: document.getElementById('form-title').value.trim(),
                     category: document.getElementById('form-category').value,
                     time: parseInt(document.getElementById('form-time').value) || 0,
-                    image: document.getElementById('form-image').value.trim(),
+                    image: fotoSceltaDefinitiva,
                     ingredients: ingredients,
                     steps: steps
                 };
@@ -580,7 +666,7 @@
             salvaSuFileLocale();
             closeModal();
             renderRecipesList(getFilteredRecipes());
-            openRecipeDetail(idRicettaAttiva); // Riapre il dettaglio aggiornato
+            openRecipeDetail(idRicettaAttiva);
         }
 
         function deleteRecipe() {
@@ -609,22 +695,63 @@
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedJSON = JSON.parse(e.target.result);
+                    
                     if (Array.isArray(importedJSON)) {
-                        if (confirm(`Rilevate ${importedJSON.length} ricette. Sovrascrivere il database attuale?`)) {
-                            databaseRicette = importedJSON;
-                            salvaSuFileLocale();
-                            closeRecipeDetail();
-                            switchTab('home');
-                            renderRecipesList(databaseRicette);
-                            alert("Dati importati correttamente!");
+                        const scelta = confirm(
+                            `Rilevate ${importedJSON.length} ricette nel file.\n\n` +
+                            `• Premi OK per UNIRLE a quelle attuali (manterrai le tue ricette ed eviterai i duplicati).\n` +
+                            `• Premi ANNULLA per CANCELLARE il ricettario attuale e sostituirlo interamente con questo file.`
+                        );
+
+                        if (scelta) {
+                            let ricetteAggiunte = 0;
+                            importedJSON.forEach(nuovaRicetta => {
+                                const esisteGia = databaseRicette.some(r => 
+                                    r.id === nuovaRicetta.id || 
+                                    r.title.toLowerCase().trim() === nuovaRicetta.title.toLowerCase().trim()
+                                );
+                                
+                                if (!esisteGia) {
+                                    databaseRicette.push(nuovaRicetta);
+                                    ricetteAggiunte++;
+                                }
+                            });
+                            alert(`Operazione completata con successo! Sono state aggiunte ${ricetteAggiunte} nuove ricette al tuo archivio.`);
+                        } else {
+                            const confermaSecondaria = confirm(
+                                "ATTENZIONE!\n" +
+                                "Sei assolutamente sicuro di voler sovrascrivere tutto?\n" +
+                                "In questo modo eliminerai TUTTE le ricette attualmente salvate nella memoria del telefono."
+                            );
+
+                            if (confermaSecondaria) {
+                                databaseRicette = importedJSON;
+                                alert("Ricettario sovrascritto con successo!");
+                            } else {
+                                event.target.value = '';
+                                return;
+                            }
                         }
+
+                        salvaSuFileLocale();
+                        closeRecipeDetail();
+                        switchTab('home');
+                        renderRecipesList(databaseRicette);
+                        
+                    } else {
+                        alert("Errore: Il file selezionato non contiene un elenco valido di ricette strutturate.");
                     }
-                } catch (err) { alert("Errore di formato JSON."); }
+                } catch (err) { 
+                    alert("Errore durante la lettura del file. Assicurati che sia un file di backup .json valido."); 
+                    console.error(err);
+                }
             };
+            
             reader.readAsText(file);
             event.target.value = '';
         }
