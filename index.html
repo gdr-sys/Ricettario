@@ -12,7 +12,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
         }
-        /* Nasconde la barra di scorrimento ma mantiene la funzionalità */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -51,8 +50,7 @@
                 <div class="flex justify-between items-center px-1">
                     <h3 class="font-bold text-gray-400 text-xs uppercase tracking-wider">Ricette (<span id="recipe-count">0</span>)</h3>
                 </div>
-                <div id="recipes-container" class="space-y-2.5">
-                    </div>
+                <div id="recipes-container" class="space-y-2.5"></div>
             </div>
         </div>
 
@@ -71,7 +69,7 @@
 
         <div id="section-backup" class="hidden bg-white p-5 rounded-2xl border border-gray-100 shadow-xs space-y-4">
             <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2"><i data-lucide="database" class="text-orange-500 w-4 h-4"></i> Backup & Sincronizzazione</h3>
-            <p class="text-xs text-gray-500 leading-relaxed">Esporta le tue ricette in un file per non perderle o importale su un altro telefono.</p>
+            <p class="text-xs text-gray-500 leading-relaxed">Esporta o importa le tue ricette per non perderle.</p>
             <div class="grid grid-cols-2 gap-3 pt-2">
                 <button onclick="triggerImport()" class="bg-gray-50 border border-gray-200 text-gray-700 py-3 rounded-xl font-medium text-xs flex flex-col items-center justify-center gap-1.5 active:bg-gray-100 transition">
                     <i data-lucide="download" class="w-5 h-5 text-gray-500"></i> Importa File
@@ -91,9 +89,15 @@
             <button onclick="closeRecipeDetail()" class="absolute top-4 left-4 bg-white/95 text-gray-800 p-2 rounded-xl shadow-md active:scale-95 transition">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
             </button>
-            <button onclick="deleteRecipe()" class="absolute top-4 right-4 bg-white/95 text-red-600 p-2 rounded-xl shadow-md active:scale-95 transition">
-                <i data-lucide="trash-2" class="w-5 h-5"></i>
-            </button>
+            
+            <div class="absolute top-4 right-4 flex gap-2">
+                <button onclick="openEditModal()" class="bg-white/95 text-orange-600 p-2 rounded-xl shadow-md active:scale-95 transition" title="Modifica ricetta">
+                    <i data-lucide="pencil" class="w-5 h-5"></i>
+                </button>
+                <button onclick="deleteRecipe()" class="bg-white/95 text-red-600 p-2 rounded-xl shadow-md active:scale-95 transition" title="Elimina ricetta">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </button>
+            </div>
             
             <div class="absolute bottom-4 left-4 right-4 text-white">
                 <span id="detail-category" class="bg-orange-500 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">Categoria</span>
@@ -131,7 +135,7 @@
         </div>
     </div>
 
-    <button id="floating-add-btn" onclick="openModal()" class="fixed bottom-20 right-4 bg-orange-500 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-30 active:scale-95 transition-transform" title="Nuova Ricetta">
+    <button id="floating-add-btn" onclick="openCreateModal()" class="fixed bottom-20 right-4 bg-orange-500 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center z-30 active:scale-95 transition-transform" title="Nuova Ricetta">
         <i data-lucide="plus" class="w-5 h-5"></i>
     </button>
 
@@ -149,11 +153,13 @@
 
     <div id="recipe-modal" class="fixed inset-0 bg-white z-50 hidden flex-col overflow-y-auto">
         <div class="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-            <h3 class="font-bold text-gray-900 text-base">Nuova Ricetta</h3>
+            <h3 id="modal-title-text" class="font-bold text-gray-900 text-base">Nuova Ricetta</h3>
             <button type="button" onclick="closeModal()" class="text-gray-400 p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
         
         <form id="recipe-form" onsubmit="saveRecipe(event)" class="p-4 space-y-4 flex-1 text-xs pb-12">
+            <input type="hidden" id="form-recipe-id" value="">
+
             <div>
                 <label class="block font-semibold text-gray-600 mb-1">Nome Ricetta *</label>
                 <input type="text" id="form-title" required placeholder="Es. Lasagne alla Bolognese" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-500">
@@ -211,7 +217,7 @@
             {
                 id: "demo-1",
                 title: "Bowl di Salmone e Avocado",
-                category: "piatto unico",
+                category: "primo",
                 time: 20,
                 image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=600",
                 ingredients: [
@@ -256,7 +262,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // Navigazione a Tab Bottom Bar
         function switchTab(tabName) {
             document.getElementById('section-home').classList.add('hidden');
             document.getElementById('section-filters').classList.add('hidden');
@@ -273,7 +278,6 @@
             updateFloatingButtonVisibility();
         }
 
-        // Filtro rapido categorie superiore
         function setCategoryFilter(cat) {
             filtroCategoriaAttivo = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -303,7 +307,7 @@
             container.innerHTML = '';
 
             if (recipes.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-8">Nessuna ricetta corrispondente ai filtri.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-8">Nessuna ricetta trovata.</p>`;
                 return;
             }
 
@@ -335,8 +339,7 @@
             const ricetta = databaseRicette.find(r => r.id === id);
             if (!ricetta) return;
 
-            const overlay = document.getElementById('detail-overlay');
-            overlay.classList.remove('hidden');
+            document.getElementById('detail-overlay').classList.remove('hidden');
 
             document.getElementById('detail-title').textContent = ricetta.title;
             document.getElementById('detail-category').textContent = ricetta.category || 'Ricetta';
@@ -400,7 +403,7 @@
 
             const ricettaOriginale = databaseRicette.find(r => r.id === idRicettaAttiva);
             const ingredienteGuidaOriginale = ricettaOriginale.ingredients[idx];
-            if (ingredienteGuidaOriginale.qta === 0) return alert("Quantità base invalida.");
+            if (ingredienteGuidaOriginale.qta === 0) return alert("Quantità originale invalida.");
 
             const fattoreDiScala = nuovoValore / ingredienteGuidaOriginale.qta;
             ingredientiModificatiConvertitore = ricettaOriginale.ingredients.map(ing => ({
@@ -438,7 +441,42 @@
             renderRecipesList(getFilteredRecipes());
         }
 
-        function openModal() {
+        // APERTURA IN MODALITÀ "CREAZIONE"
+        function openCreateModal() {
+            document.getElementById('form-recipe-id').value = ''; 
+            document.getElementById('modal-title-text').textContent = "Nuova Ricetta";
+            resetForm();
+            document.getElementById('recipe-modal').classList.remove('hidden');
+            updateFloatingButtonVisibility();
+        }
+
+        // APERTURA IN MODALITÀ "MODIFICA" (Carica i dati correnti)
+        function openEditModal() {
+            const ricetta = databaseRicette.find(r => r.id === idRicettaAttiva);
+            if (!ricetta) return;
+
+            document.getElementById('form-recipe-id').value = ricetta.id;
+            document.getElementById('modal-title-text').textContent = "Modifica Ricetta";
+
+            document.getElementById('form-title').value = ricetta.title;
+            document.getElementById('form-category').value = ricetta.category || 'primo';
+            document.getElementById('form-time').value = ricetta.time;
+            document.getElementById('form-image').value = ricetta.image || '';
+
+            // Carica gli ingredienti esistenti
+            const ingContainer = document.getElementById('form-ingredients-container');
+            ingContainer.innerHTML = '';
+            ricetta.ingredients.forEach(ing => {
+                addIngredientRowWithValue(ing.nome, ing.qta);
+            });
+
+            // Carica i passaggi esistenti
+            const stepContainer = document.getElementById('form-steps-container');
+            stepContainer.innerHTML = '';
+            ricetta.steps.forEach(step => {
+                addStepRowWithValue(step);
+            });
+
             document.getElementById('recipe-modal').classList.remove('hidden');
             updateFloatingButtonVisibility();
         }
@@ -458,25 +496,29 @@
             addStepRow();
         }
 
-        function addIngredientRow() {
+        function addIngredientRow() { addIngredientRowWithValue('', ''); }
+        
+        function addIngredientRowWithValue(nome, qta) {
             const container = document.getElementById('form-ingredients-container');
             const row = document.createElement('div');
             row.className = "flex gap-2 items-center ing-row";
             row.innerHTML = `
-                <input type="text" placeholder="Ingredienti (es. Riso in g)" required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs ing-name">
-                <input type="number" step="any" placeholder="Q.tà" required class="w-20 px-2 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs text-center ing-qta">
+                <input type="text" value="${nome}" placeholder="Ingredienti (es. Riso in g)" required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs ing-name">
+                <input type="number" step="any" value="${qta}" placeholder="Q.tà" required class="w-20 px-2 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs text-center ing-qta">
                 <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 p-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
             `;
             container.appendChild(row);
             if(window.lucide) lucide.createIcons();
         }
 
-        function addStepRow() {
+        function addStepRow() { addStepRowWithValue(''); }
+
+        function addStepRowWithValue(testo) {
             const container = document.getElementById('form-steps-container');
             const row = document.createElement('div');
             row.className = "flex gap-2 items-start step-row";
             row.innerHTML = `
-                <textarea rows="2" placeholder="Descrivi il passaggio..." required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs resize-none step-text"></textarea>
+                <textarea rows="2" placeholder="Descrivi il passaggio..." required class="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none text-xs resize-none step-text">${testo}</textarea>
                 <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 p-1 mt-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
             `;
             container.appendChild(row);
@@ -503,21 +545,42 @@
                 if (txtArea && txtArea.value.trim()) steps.push(txtArea.value.trim());
             });
 
-            const nuovaRicetta = {
-                id: 'recipe-' + Date.now(),
-                title: document.getElementById('form-title').value.trim(),
-                category: document.getElementById('form-category').value,
-                time: parseInt(document.getElementById('form-time').value) || 0,
-                image: document.getElementById('form-image').value.trim(),
-                ingredients: ingredients,
-                steps: steps
-            };
+            const editId = document.getElementById('form-recipe-id').value;
 
-            databaseRicette.unshift(nuovaRicetta);
+            if (editId) {
+                // MODIFICA: Aggiorna la ricetta esistente nello stesso posto
+                const index = databaseRicette.findIndex(r => r.id === editId);
+                if (index !== -1) {
+                    databaseRicette[index] = {
+                        id: editId,
+                        title: document.getElementById('form-title').value.trim(),
+                        category: document.getElementById('form-category').value,
+                        time: parseInt(document.getElementById('form-time').value) || 0,
+                        image: document.getElementById('form-image').value.trim(),
+                        ingredients: ingredients,
+                        steps: steps
+                    };
+                }
+                idRicettaAttiva = editId;
+            } else {
+                // CREAZIONE: Aggiungi in cima alla lista
+                const nuovaRicetta = {
+                    id: 'recipe-' + Date.now(),
+                    title: document.getElementById('form-title').value.trim(),
+                    category: document.getElementById('form-category').value,
+                    time: parseInt(document.getElementById('form-time').value) || 0,
+                    image: document.getElementById('form-image').value.trim(),
+                    ingredients: ingredients,
+                    steps: steps
+                };
+                databaseRicette.unshift(nuovaRicetta);
+                idRicettaAttiva = nuovaRicetta.id;
+            }
+
             salvaSuFileLocale();
             closeModal();
             renderRecipesList(getFilteredRecipes());
-            openRecipeDetail(nuovaRicetta.id);
+            openRecipeDetail(idRicettaAttiva); // Riapre il dettaglio aggiornato
         }
 
         function deleteRecipe() {
